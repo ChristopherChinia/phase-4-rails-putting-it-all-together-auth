@@ -8,18 +8,19 @@ class RecipesController < ApplicationController
     end
 
     def create
+        if session[:user_id]
         user = User.find_by(id: session[:user_id])
-        recipe = Recipe.create(recipe_params);
-        recipe.user_id = user.id
-
+        recipe = user.recipes.new(recipe_params)
         if recipe.valid?
+            recipe.save!
             render json: recipe, status: :created
-            render json: recipe.user_id
-
         else
             render json: {errors: recipe.errors.full_messages} , status: :unprocessable_entity
-        end
-    end
+          end
+       else
+        render json: { errors:["You must be logged in to access this content"]}, status: :unauthorized
+      end
+end
 
     private
     def recipe_params
